@@ -31,7 +31,7 @@ export function ContentInputPanel({ value, busy, onChange, onRun, onDemo }: Cont
     onChange(next); setArtifact(manualArtifact(next)); setNotice("Local media prepared. It stays in this browser session and is never uploaded by the importer.");
   }
 
-  return <section className="composer" aria-label="Content input">
+  return <section className="composer" id="content" aria-label="Content input">
     <div className="composer-head"><span>PUT CONTENT IN THE ROOM</span><small>Links are referenced, never scraped; paste copy when needed</small><button type="button" className="demo-trigger" onClick={onDemo}>RUN VELLOE DEMO</button></div>
     <VelloeDemoController onStart={onDemo} />
     <div className="url-row"><input value={value.sourceUrl ?? ""} onChange={e => onChange({ ...value, sourceUrl: e.target.value })} placeholder="Paste a URL — Instagram, LinkedIn, X, YouTube, or a web page" aria-label="Content URL" /><button type="button" onClick={preparePost}>PREPARE LINK</button></div>{notice && <p className="import-notice">{notice}</p>}

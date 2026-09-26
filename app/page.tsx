@@ -20,6 +20,7 @@ export default function Home() {
   const [busy, setBusy] = useState(false);
   const [resimulating, setResimulating] = useState(false);
   const metrics = useMemo(() => result ? overview(result.reactions) : null, [result]);
+  const activeStage = versionB ? 5 : result ? 4 : busy ? Math.min(stage + 1, 3) : 1;
 
   async function run(content = input, populationId = audienceId) {
     if (!content.text.trim() || busy) return;
@@ -46,8 +47,9 @@ export default function Home() {
   }
 
   return <main>
-    <header><div className="brand"><span className="brand-mark">C</span><span>CONTENT ROOM</span></div><nav><a href="#room">Audience room</a><a href="#blueprint">System blueprint</a></nav><div className="mode"><i /> SYNTHETIC AUDIENCE SIMULATION</div></header>
-    <section className="intro"><div><p className="eyebrow">PRE-PUBLICATION INTELLIGENCE</p><h1>Rehearse your content<br />before the real audience does.</h1><p className="sub">Generate hypotheses with 100 simulated audience members, understand the split, and test a sharper Version B before you publish.</p></div><div className="intro-note"><b>100</b><span>behavioral personas<br />in every room</span></div></section>
+    <header><div className="brand"><span className="brand-mark">C</span><span>CONTENT ROOM</span></div><nav><a href="#content">Content</a><a href="#room">Simulation</a><a href="#intelligence">Intelligence</a><a href="#strategy">Strategy</a></nav><div className="mode"><i /> SYNTHETIC SIMULATION</div></header>
+    <section className="intro"><div><p className="eyebrow">PRE-PUBLICATION INTELLIGENCE</p><h1>Rehearse your content<br />before the real audience does.</h1><p className="sub">Bring a post, video, image, landing page, script, email, or campaign into a contextual synthetic audience—then use the evidence to improve it before publishing.</p><div className="content-kinds"><span>URL</span><span>PHOTO</span><span>VIDEO</span><span>POST</span><span>WEBSITE</span><span>TEXT</span></div></div><div className="intro-note"><b>100</b><span>synthetic audience agents<br />per deterministic rehearsal</span></div></section>
+    <div className="stage-strip" aria-label="Content Room workflow">{["CONTENT", "AUDIENCE", "SIMULATION", "INTELLIGENCE", "STRATEGY"].map((name, index) => <div key={name} className={index + 1 <= activeStage ? "active" : ""}><i>{String(index + 1).padStart(2, "0")}</i><span>{name}</span></div>)}</div>
     <ContentInputPanel value={input} busy={busy} onChange={setInput} onRun={() => void run()} onDemo={runVelloeDemo} />
     {busy && <RoomProgress stage={stage} />}
     {result && metrics && <Results audienceId={audienceId} input={input} result={result} metrics={metrics} versionB={versionB} resimulating={resimulating} onResimulate={resimulate} />}

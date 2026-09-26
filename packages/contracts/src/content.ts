@@ -16,6 +16,17 @@ export const contentInputSchema = z.object({
   targetAudience: z.string().max(2_000),
 });
 
+export const contentDnaSchema = z.object({
+  hook: z.string().min(1).max(280),
+  topic: z.string().min(1).max(280),
+  promise: z.string().min(1).max(500),
+  tone: z.string().min(1).max(180),
+  emotion: z.string().min(1).max(180),
+  cta: z.string().min(1).max(280),
+  risks: z.array(z.string().min(1).max(280)).max(5),
+  strengths: z.array(z.string().min(1).max(280)).max(5),
+});
+
 export const simulationEventSchema = z.object({
   simulationId: z.string().min(1),
   personaId: z.string(),
@@ -56,6 +67,7 @@ export type ContentSource = z.infer<typeof contentSourceSchema>;
 export type ImportStatus = z.infer<typeof importStatusSchema>;
 export type ContentType = z.infer<typeof contentTypeSchema>;
 export type ContentInput = z.infer<typeof contentInputSchema>;
+export type ContentDNA = z.infer<typeof contentDnaSchema>;
 export type SimulationEvent = z.infer<typeof simulationEventSchema>;
 export type SimulationRun = z.infer<typeof simulationRunSchema>;
 export type OasisSimulationResponse = z.infer<typeof oasisSimulationResponseSchema>;
@@ -75,7 +87,6 @@ export interface ContentArtifact {
   sourceUrl?: string;
   metadata: Record<string, unknown>;
 }
-export interface ContentDNA { hook: string; topic: string; promise: string; tone: string; emotion: string; cta: string; risks: string[]; strengths: string[]; }
 export interface Persona { id: string; name: string; age: number; city: string; occupation: string; segment: string; interests: string[]; attentionSpan: number; skepticism: number; authenticityPreference: number; promotionalTolerance: number; color: string; }
 export interface Reaction { personaId: string; action: Action; attentionScore: number; clarityScore: number; emotionalImpact: number; trustScore: number; shareIntent: number; commentIntent: number; saveIntent: number; purchaseIntent: number; emotion: string; strongestElement: string; biggestProblem: string; reasoning: string; thought: string; }
 export interface Segment { name: string; size: number; positiveRate: number; stopRate: number; trust: number; shareIntent: number; purchaseIntent: number; insight: string; }
