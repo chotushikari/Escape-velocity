@@ -1,6 +1,7 @@
 import { SimulationEngine, SimulationRun } from "./simulation-engine";
 import { buildSimulation } from "../simulation";
 import { Action, SimulationEvent, SimulationResult } from "../types";
+import { oasisSimulationResponseSchema } from "../../packages/contracts/src";
 
 const actions = new Set<Action>(["STOP", "IGNORE", "LIKE", "COMMENT", "SHARE", "SAVE", "FOLLOW", "CLICK", "BUY", "REJECT"]);
 
@@ -17,9 +18,18 @@ export class OasisSimulationEngine implements SimulationEngine {
   async simulate(run: SimulationRun): Promise<SimulationResult> {
     const baseUrl = process.env.OASIS_SERVICE_URL;
     if (!baseUrl) throw new Error("OASIS_SERVICE_URL is not configured");
-    const response = await fetch(`${baseUrl.replace(/\/$/, "")}/simulate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(run) });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25_000);
+    let response: Response;
+    try {
+      response = await fetch(`${baseUrl.replace(/\/$/, "")}/simulate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(run), signal: controller.signal });
+    } finally {
+      clearTimeout(timeout);
+    }
     if (!response.ok) throw new Error(`OASIS service failed: ${response.status}`);
-    const events = (await response.json() as SimulationEvent[]).map(normaliseEvent);
+    const payload = oasisSimulationResponseSchema.safeParse(await response.json());
+    if (!payload.success) throw new Error("OASIS service returned an invalid event contract");
+    const events = payload.data.events.map(normaliseEvent);
     const baseline = buildSimulation(run.content);
     const eventByPersona = new Map(events.map((event) => [event.personaId, event]));
 
@@ -42,6 +52,7 @@ export class OasisSimulationEngine implements SimulationEngine {
         };
       }),
       events,
+      audienceId: payload.data.audienceId,
       engine: this.name,
     };
   }

@@ -17,7 +17,10 @@ export const contentInputSchema = z.object({
 });
 
 export const simulationEventSchema = z.object({
+  simulationId: z.string().min(1),
   personaId: z.string(),
+  contentVariantId: z.string().min(1),
+  step: z.number().int().nonnegative(),
   timestamp: z.string().datetime(),
   state: z.enum(["EXPOSED", "ATTENDING", "INTERPRETING", "DECIDING", "ACTED"]),
   action: actionSchema,
@@ -31,6 +34,22 @@ export const simulationEventSchema = z.object({
   emotion: z.string(),
 });
 
+/** Identifies a fixed synthetic population across a Version A/B comparison. */
+export const audienceIdSchema = z.string().min(1).max(120).regex(/^[A-Za-z0-9_-]+$/);
+
+/** Request shape shared by the web adapter and the optional Python service. */
+export const simulationRunSchema = z.object({
+  content: contentInputSchema,
+  sameAudienceId: audienceIdSchema.optional(),
+});
+
+/** The only OASIS-specific payload the web application is allowed to consume. */
+export const oasisSimulationResponseSchema = z.object({
+  engine: z.literal("OASIS"),
+  audienceId: audienceIdSchema,
+  events: z.array(simulationEventSchema).min(1).max(500),
+}).strict();
+
 export type Platform = z.infer<typeof platformSchema>;
 export type Action = z.infer<typeof actionSchema>;
 export type ContentSource = z.infer<typeof contentSourceSchema>;
@@ -38,6 +57,8 @@ export type ImportStatus = z.infer<typeof importStatusSchema>;
 export type ContentType = z.infer<typeof contentTypeSchema>;
 export type ContentInput = z.infer<typeof contentInputSchema>;
 export type SimulationEvent = z.infer<typeof simulationEventSchema>;
+export type SimulationRun = z.infer<typeof simulationRunSchema>;
+export type OasisSimulationResponse = z.infer<typeof oasisSimulationResponseSchema>;
 
 export interface ContentArtifact {
   id: string;
@@ -59,4 +80,4 @@ export interface Persona { id: string; name: string; age: number; city: string; 
 export interface Reaction { personaId: string; action: Action; attentionScore: number; clarityScore: number; emotionalImpact: number; trustScore: number; shareIntent: number; commentIntent: number; saveIntent: number; purchaseIntent: number; emotion: string; strongestElement: string; biggestProblem: string; reasoning: string; thought: string; }
 export interface Segment { name: string; size: number; positiveRate: number; stopRate: number; trust: number; shareIntent: number; purchaseIntent: number; insight: string; }
 export interface Strategy { diagnosis: string; strongestSignal: string; biggestProblem: string; priorityChange: string; changes: string[]; newHook: string; newCTA: string; revisedContent: string; audienceStrategy: string; experimentIdeas: string[]; }
-export interface SimulationResult { dna: ContentDNA; personas: Persona[]; reactions: Reaction[]; events: SimulationEvent[]; segments: Segment[]; strategy: Strategy; engine?: string; }
+export interface SimulationResult { dna: ContentDNA; personas: Persona[]; reactions: Reaction[]; events: SimulationEvent[]; segments: Segment[]; strategy: Strategy; audienceId?: string; engine?: string; }
