@@ -49,8 +49,12 @@ async def run_oasis(content: Content) -> list[Event]:
     OASIS is used for social-agent execution. Content scoring/strategy remains
     in the web application, so OASIS platform details do not leak across the boundary.
     """
+    groq_key = os.getenv("GROQ_API_KEY")
+    if groq_key:
+        os.environ.setdefault("OPENAI_API_KEY", groq_key)
+        os.environ.setdefault("OPENAI_API_BASE_URL", "https://api.groq.com/openai/v1")
     if not os.getenv("OPENAI_API_KEY"):
-        raise RuntimeError("OPENAI_API_KEY is required by the OASIS service")
+        raise RuntimeError("Set GROQ_API_KEY or OPENAI_API_KEY on the OASIS service")
     try:
         import oasis
         from oasis import ActionType, LLMAction, ManualAction, generate_reddit_agent_graph
@@ -62,7 +66,11 @@ async def run_oasis(content: Content) -> list[Event]:
     with tempfile.TemporaryDirectory() as directory:
         profile_path = Path(directory) / "content_room_profiles.json"
         profile_path.write_text(json.dumps(profile_rows()), encoding="utf-8")
-        model = ModelFactory.create(model_platform=ModelPlatformType.OPENAI, model_type=ModelType.GPT_4O_MINI)
+        model = ModelFactory.create(
+            model_platform=ModelPlatformType.OPENAI,
+            model_type=os.getenv("OASIS_MODEL", "llama-3.3-70b-versatile"),
+            url=os.getenv("OPENAI_API_BASE_URL"),
+        )
         actions = [ActionType.LIKE_POST, ActionType.CREATE_COMMENT, ActionType.FOLLOW, ActionType.DO_NOTHING]
         graph = await generate_reddit_agent_graph(profile_path=str(profile_path), model=model, available_actions=actions)
         environment = oasis.make(agent_graph=graph, platform=oasis.DefaultPlatformType.REDDIT, database_path=str(Path(directory) / "run.db"))
@@ -81,7 +89,7 @@ async def run_oasis(content: Content) -> list[Event]:
 async def health() -> dict[str, str]:
     try:
         import oasis  # noqa: F401
-        status = "ready" if os.getenv("OPENAI_API_KEY") else "configured_without_model_key"
+        status = "ready" if os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY") else "configured_without_model_key"
     except ImportError:
         status = "oasis_not_installed"
     return {"status": status}
