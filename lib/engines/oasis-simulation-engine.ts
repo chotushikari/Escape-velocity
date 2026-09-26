@@ -7,6 +7,12 @@ import { SimulationEvent, SimulationResult } from "../types";
  */
 export class OasisSimulationEngine implements SimulationEngine {
   readonly name = "OasisSimulationEngine";
-  async simulate(_run: SimulationRun): Promise<SimulationResult> { throw new Error("OASIS runtime is not installed in this deployment"); }
+  async simulate(run: SimulationRun): Promise<SimulationResult> {
+    const baseUrl = process.env.OASIS_SERVICE_URL;
+    if (!baseUrl) throw new Error("OASIS_SERVICE_URL is not configured");
+    const response = await fetch(`${baseUrl.replace(/\/$/, "")}/simulate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(run) });
+    if (!response.ok) throw new Error(`OASIS service failed: ${response.status}`);
+    return response.json() as Promise<SimulationResult>;
+  }
   events(_result: SimulationResult): SimulationEvent[] { return []; }
 }
