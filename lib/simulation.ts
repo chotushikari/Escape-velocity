@@ -38,8 +38,9 @@ function simulateOne(persona: Persona, content: ContentInput, i: number): Reacti
   const novelty = /ai|automatic|automate/i.test(content.text) ? 12 : 4;
   const explicitReview = /review every|before (it is|they are|anything is) sent|see exactly what is shared/i.test(content.text);
   const evidenceCue = /case study|customers|proof|time saved|success rate|review every|see exactly/i.test(content.text);
+  const structuredExplanation = explicitReview && /\n/.test(content.text);
   const attention = clamp(39 + novelty + (explicitReview ? 7 : 0) + (relevant ? 20 : 0) + persona.promotionalTolerance / 4 - persona.skepticism / 5 + ((i * 13) % 19) - 9);
-  const clarity = clamp(67 + (content.text.length < 160 ? 10 : -4) + (explicitReview ? 18 : 0) + (i % 4) * 3);
+  const clarity = clamp(67 + (content.text.length < 160 ? 10 : -4) + (explicitReview ? 18 : 0) + (structuredExplanation ? 13 : 0) + (i % 4) * 3);
   // A bold automation claim starts with a modest trust penalty; highly skeptical
   // personas still reject it, while people with a strong career need can engage.
   const trust = clamp(75 - persona.skepticism / 2 + (relevant ? 4 : 0) + (/privacy|secure|control/i.test(content.text) ? 4 : -3) + (evidenceCue ? 7 : 0) + ((i * 7) % 14) - 7);
