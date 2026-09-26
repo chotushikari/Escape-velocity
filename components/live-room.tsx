@@ -32,6 +32,10 @@ export function LiveRoom({ result }: { result: SimulationResult }) {
   const selected = useMemo(() => result.personas.find(persona => persona.id === selectedId) ?? result.personas[0], [result.personas, selectedId]);
   const selectedReaction = result.reactions.find(reaction => reaction.personaId === selected?.id);
   const reached = result.reactions.filter(reaction => reachesState(reaction, activeState));
+  const eventFeed = useMemo(() => reached.slice(0, 4).map(reaction => {
+    const persona = result.personas.find(candidate => candidate.id === reaction.personaId);
+    return { id: reaction.personaId, name: persona?.name ?? "Audience agent", action: actionLabel[reaction.action], state: activeState };
+  }), [activeState, reached, result.personas]);
 
   return <section className="room room-live" id="room" aria-label="The Room live simulation replay">
     <div className="section-label"><span>THE ROOM IS LIVE</span><span>SIMULATED RUN REPLAY · 100 PERSONAS</span></div>
@@ -44,6 +48,7 @@ export function LiveRoom({ result }: { result: SimulationResult }) {
         return <button type="button" key={persona.id} onClick={() => setSelectedId(persona.id)} className={`agent-node ${available ? "reached" : "waiting"} ${isSelected ? "selected" : ""} ${reaction.action.toLowerCase()}`} style={{ "--agent-delay": `${(index % 20) * 38}ms`, "--agent-color": persona.color } as React.CSSProperties} aria-label={`${persona.name}: ${available ? actionLabel[reaction.action] : activeState.toLowerCase()}`}><span>{persona.name[0]}</span></button>;
       })}<div className="room-artifact" aria-label="Content artifact at the center of the room"><span>CONTENT IN ROOM</span><b>{result.dna.hook}</b><small>100 simulated feeds</small></div></div>
       {selected && selectedReaction && <aside className="agent-inspector"><div className="agent-inspector-head"><span className="avatar" style={{ background: selected.color }}>{selected.name[0]}</span><div><b>{selected.name}, {selected.age}</b><small>{selected.occupation} · {selected.segment}</small></div></div><div className="agent-state"><span>SIMULATED STATE</span><strong>{reachesState(selectedReaction, activeState) ? activeState === "COMPLETED" ? actionLabel[selectedReaction.action] : activeState : "WAITING"}</strong></div><p>“{selectedReaction.thought}”</p><dl><div><dt>Attention</dt><dd>{selectedReaction.attentionScore}</dd></div><div><dt>Clarity</dt><dd>{selectedReaction.clarityScore}</dd></div><div><dt>Trust</dt><dd>{selectedReaction.trustScore}</dd></div></dl><small className="inspector-note">Simulated persona response · click any node to inspect</small></aside>}</div>
+      <div className="synthetic-event-feed" aria-live="polite"><div><span>SYNTHETIC EVENT FEED</span><small>OBSERVABLE RUN EVENTS</small></div>{eventFeed.map((event, index) => <p key={`${event.id}-${event.state}`}><i style={{ animationDelay: `${index * 140}ms` }} /> <b>{event.name}</b> reached <em>{event.state}</em>{activeState === "COMPLETED" ? ` · ${event.action}` : ""}</p>)}</div>
     </div>
     <div className="room-outcomes"><div><span>SIMULATED ACTION MIX</span><b>{result.reactions.filter(reaction => reaction.action !== "IGNORE" && reaction.action !== "REJECT").length} constructive actions</b></div><div><span>STRONGEST FRICTION</span><b>{result.strategy.biggestProblem}</b></div><div><span>RUN MODE</span><b>{result.engine === "DemoSimulationEngine" ? "Deterministic demo" : "Structured simulation"}</b></div></div>
   </section>;

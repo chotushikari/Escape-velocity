@@ -5,6 +5,7 @@ import { ContentInput, SimulationResult } from "../lib/types";
 import { overview } from "../lib/simulation";
 import { ContentInputPanel } from "../components/content-input";
 import { RoomProgress } from "../components/room-progress";
+import { RehearsalEventStream } from "../components/rehearsal-event-stream";
 import { LiveRoom } from "../components/live-room";
 import { VersionComparison } from "../components/version-comparison";
 import { VelloeDemoScenario } from "../lib/demo/velloe-demo-scenario";
@@ -23,7 +24,7 @@ export default function Home() {
   const activeStage = versionB ? 5 : result ? 4 : busy ? Math.min(stage + 1, 3) : 1;
 
   async function run(content = input, populationId = audienceId) {
-    if ((!content.text.trim() && !content.mediaUrl) || busy) return;
+    if ((!content.text.trim() && !content.mediaUrl && !content.mediaData) || busy) return;
     setBusy(true); setResult(null); setVersionB(null); setStage(0);
     const timer = window.setInterval(() => setStage(value => Math.min(value + 1, 4)), 600);
     try {
@@ -48,10 +49,10 @@ export default function Home() {
 
   return <main>
     <header><div className="brand"><span className="brand-mark">C</span><span>CONTENT ROOM</span></div><nav><a href="#content">Content</a><a href="#room">Simulation</a><a href="#intelligence">Intelligence</a><a href="#strategy">Strategy</a></nav><div className="mode"><i /> SYNTHETIC SIMULATION</div></header>
-    <section className="intro"><div><p className="eyebrow">PRE-PUBLICATION INTELLIGENCE</p><h1>Rehearse your content<br />before the real audience does.</h1><p className="sub">Bring a post, video, image, landing page, script, email, or campaign into a contextual synthetic audience—then use the evidence to improve it before publishing.</p><div className="content-kinds"><span>URL</span><span>PHOTO</span><span>VIDEO</span><span>POST</span><span>WEBSITE</span><span>TEXT</span></div></div><div className="intro-note"><b>100</b><span>synthetic audience agents<br />per deterministic rehearsal</span></div></section>
+    <section className="intro"><div><p className="eyebrow">PRE-PUBLICATION INTELLIGENCE</p><h1>Rehearse your content<br />before the real audience does.</h1><p className="sub">Bring a post, video, image, landing page, script, email, or campaign into a contextual synthetic audience—then use the evidence to improve it before publishing.</p><div className="content-kinds"><span>URL</span><span>PHOTO</span><span>VIDEO</span><span>POST</span><span>WEBSITE</span><span>TEXT</span></div></div><div className="intro-side"><div className="intro-note"><b>100</b><span>synthetic audience agents<br />per deterministic rehearsal</span></div><div className="intro-visual"><img src="/images/synthetic-audience-field.png" alt="Abstract synthetic audience field" /><span>THE ROOM, BEFORE THE ROOM</span></div></div></section>
     <div className="stage-strip" aria-label="Content Room workflow">{["CONTENT", "AUDIENCE", "SIMULATION", "INTELLIGENCE", "STRATEGY"].map((name, index) => <div key={name} className={index + 1 <= activeStage ? "active" : ""}><i>{String(index + 1).padStart(2, "0")}</i><span>{name}</span></div>)}</div>
     <ContentInputPanel value={input} busy={busy} onChange={setInput} onRun={() => void run()} onDemo={runVelloeDemo} />
-    {busy && <RoomProgress stage={stage} />}
+    {busy && <><RoomProgress stage={stage} /><RehearsalEventStream stage={stage} /></>}
     {result && metrics && <Results audienceId={audienceId} input={input} result={result} metrics={metrics} versionB={versionB} resimulating={resimulating} onResimulate={resimulate} />}
     {!result && !busy && <section className="empty"><span>01</span><p>Paste a campaign URL, add a photo or video, or write the content directly. The room always has a manual fallback.</p></section>}
     <footer>CONTENT ROOM · SYNTHETIC BEHAVIORAL SIMULATION · HYPOTHESES TO VALIDATE, NOT A REAL SURVEY</footer>
