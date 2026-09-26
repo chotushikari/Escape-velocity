@@ -1,8 +1,9 @@
 import { z } from "zod";
 
-export const platformSchema = z.enum(["Instagram", "YouTube Shorts", "LinkedIn", "X"]);
+export const platformSchema = z.enum(["Instagram", "YouTube Shorts", "LinkedIn", "X", "Web", "Manual"]);
 export const actionSchema = z.enum(["STOP", "IGNORE", "LIKE", "COMMENT", "SHARE", "SAVE", "FOLLOW", "CLICK", "BUY", "REJECT"]);
 export const contentSourceSchema = z.enum(["url", "upload", "paste", "demo"]);
+export const importStatusSchema = z.enum(["ready", "needs_copy", "unsupported", "invalid"]);
 export const contentTypeSchema = z.enum(["social_post", "video", "advertisement", "campaign", "landing_page", "email", "article", "script", "product_announcement", "creative_concept"]);
 
 export const contentInputSchema = z.object({
@@ -33,11 +34,26 @@ export const simulationEventSchema = z.object({
 export type Platform = z.infer<typeof platformSchema>;
 export type Action = z.infer<typeof actionSchema>;
 export type ContentSource = z.infer<typeof contentSourceSchema>;
+export type ImportStatus = z.infer<typeof importStatusSchema>;
 export type ContentType = z.infer<typeof contentTypeSchema>;
 export type ContentInput = z.infer<typeof contentInputSchema>;
 export type SimulationEvent = z.infer<typeof simulationEventSchema>;
 
-export interface ContentArtifact { id: string; type: ContentType; source: ContentSource; title?: string; text?: string; mediaUrl?: string; sourceUrl?: string; metadata: Record<string, unknown>; }
+export interface ContentArtifact {
+  id: string;
+  type: ContentType;
+  source: ContentSource;
+  title: string;
+  status: ImportStatus;
+  summary: string;
+  author?: string;
+  platform?: Platform;
+  text?: string;
+  mediaUrl?: string;
+  mediaKind?: "image" | "video";
+  sourceUrl?: string;
+  metadata: Record<string, unknown>;
+}
 export interface ContentDNA { hook: string; topic: string; promise: string; tone: string; emotion: string; cta: string; risks: string[]; strengths: string[]; }
 export interface Persona { id: string; name: string; age: number; city: string; occupation: string; segment: string; interests: string[]; attentionSpan: number; skepticism: number; authenticityPreference: number; promotionalTolerance: number; color: string; }
 export interface Reaction { personaId: string; action: Action; attentionScore: number; clarityScore: number; emotionalImpact: number; trustScore: number; shareIntent: number; commentIntent: number; saveIntent: number; purchaseIntent: number; emotion: string; strongestElement: string; biggestProblem: string; reasoning: string; thought: string; }

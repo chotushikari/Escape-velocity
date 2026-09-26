@@ -10,10 +10,10 @@ Provide honest URL/media/manual ingestion and a reliable one-click Velloe demons
 
 ## ACCEPTANCE CRITERIA
 
-- [ ] Importer boundary covers Instagram, LinkedIn, X, YouTube, Web, and Manual.
-- [ ] URL behavior never implies inaccessible content was extracted.
-- [ ] Direct media preview and manual fallback work.
-- [ ] Velloe demo is deterministic, one-click, and zero-key/network.
+- [x] Importer boundary covers Instagram, LinkedIn, X, YouTube, Web, and Manual.
+- [x] URL behavior never implies inaccessible content was extracted.
+- [x] Direct media preview and manual fallback work.
+- [x] Velloe demo is deterministic, one-click, and zero-key/network.
 
 ## CONSTRAINTS
 
@@ -27,4 +27,9 @@ Provide honest URL/media/manual ingestion and a reliable one-click Velloe demons
 
 ## FINAL REPORT
 
-List changed behavior, test results, and remaining risks.
+Metadata-only URL importers identify context without scraping restricted content.
+Direct image/video URLs preview in place; uploaded media and pasted copy create local
+manual artifacts. The Velloe presentation controller uses only deterministic local
+state and the existing no-key demo simulation path. No actual Velloe post URL was
+present in the supplied project materials, so the fixture is explicitly marked as
+synthetic until a verified URL and permitted copy are supplied.
