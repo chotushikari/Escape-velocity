@@ -26,7 +26,7 @@ export default function Home() {
     setBusy(true); setResult(null); setVersionB(null); setStage(0);
     const timer = window.setInterval(() => setStage(value => Math.min(value + 1, 4)), 600);
     try {
-      const response = await fetch("/api/simulate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...content, sameAudienceId: populationId }) });
+      const response = await fetch("/api/simulate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content, sameAudienceId: populationId }) });
       if (!response.ok) throw new Error("Simulation unavailable");
       const data = await response.json() as SimulationResult;
       setStage(4); await new Promise(resolve => setTimeout(resolve, 350)); setResult(data);
@@ -38,7 +38,8 @@ export default function Home() {
     if (!result || resimulating) return;
     setResimulating(true);
     try {
-      const response = await fetch("/api/simulate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...input, text: result.strategy.revisedContent, sameAudienceId: audienceId }) });
+      const versionBContent = { ...input, text: result.strategy.revisedContent };
+      const response = await fetch("/api/simulate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: versionBContent, sameAudienceId: audienceId }) });
       if (!response.ok) throw new Error("Re-simulation unavailable");
       setVersionB(await response.json() as SimulationResult);
     } finally { setResimulating(false); }
