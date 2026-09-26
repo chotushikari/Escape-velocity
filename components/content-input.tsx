@@ -15,7 +15,8 @@ export function ContentInputPanel({ value, busy, onChange, onRun }: ContentInput
   function preparePost() {
     const url = value.sourceUrl?.toLowerCase() ?? "";
     const platform: Platform = url.includes("linkedin") ? "LinkedIn" : url.includes("youtube") ? "YouTube Shorts" : url.includes("x.com") || url.includes("twitter") ? "X" : "Instagram";
-    onChange({ ...value, platform });
+    const mediaKind = /\.(mp4|webm|mov)(\?|#|$)/.test(url) ? "video" : /\.(png|jpe?g|gif|webp|avif)(\?|#|$)/.test(url) ? "image" : undefined;
+    onChange({ ...value, platform, ...(mediaKind ? { mediaUrl: value.sourceUrl, mediaKind } : {}) });
   }
 
   function attachMedia(event: React.ChangeEvent<HTMLInputElement>) {
