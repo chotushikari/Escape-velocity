@@ -1,0 +1,1 @@
+{"name":"untrusted-input","cases":["", "<script>alert(1)</script>", "A"],"expected":"validation-error-or-safe-fallback"}
