@@ -24,11 +24,14 @@ export function ContentInputPanel({ value, busy, onChange, onRun, onDemo }: Cont
     onChange(applyImport(value, preview)); setArtifact(preview.artifact); setNotice(preview.notice);
   }
 
-  function attachMedia(event: React.ChangeEvent<HTMLInputElement>) {
+  async function attachMedia(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
-    const next = { ...value, mediaUrl: URL.createObjectURL(file), mediaKind: file.type.startsWith("video/") ? "video" as const : "image" as const };
-    onChange(next); setArtifact(manualArtifact(next)); setNotice("Local media prepared. It stays in this browser session and is never uploaded by the importer.");
+    const base = { ...value, mediaUrl: URL.createObjectURL(file), mediaKind: file.type.startsWith("video/") ? "video" as const : "image" as const, mediaMimeType: file.type };
+    if (file.size > 2_500_000) { onChange(base); setArtifact(manualArtifact(base)); setNotice("Large media preview is ready locally. Paste a caption or script for semantic analysis; only small media is sent to an optional AI provider."); return; }
+    const mediaData = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onerror = () => reject(reader.error); reader.onload = () => resolve(String(reader.result)); reader.readAsDataURL(file); });
+    const next = { ...base, mediaData };
+    onChange(next); setArtifact(manualArtifact(next)); setNotice("Media preview is ready. With a configured server-side Gemini key, this small file can be included in semantic analysis.");
   }
 
   return <section className="composer" id="content" aria-label="Content input">

@@ -6,8 +6,8 @@ import { analyzeWithBestAvailableProvider } from "../../../lib/ai";
 
 export async function POST(request: Request) {
   const parsed = simulationRunSchema.safeParse(await request.json());
-  if (!parsed.success || !parsed.data.content.text.trim()) {
-    return NextResponse.json({ error: "Provide content text or a caption to start a rehearsal." }, { status: 400 });
+  if (!parsed.success || (!parsed.data.content.text.trim() && !parsed.data.content.mediaData && !parsed.data.content.mediaUrl)) {
+    return NextResponse.json({ error: "Provide content text, a caption, or supported media to start a rehearsal." }, { status: 400 });
   }
   try {
     const simulation = await getSimulationEngine().simulate(parsed.data);

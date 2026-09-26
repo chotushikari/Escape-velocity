@@ -11,6 +11,8 @@ export const contentInputSchema = z.object({
   imageUrl: z.string().url().optional(),
   mediaUrl: z.string().min(1).optional(),
   mediaKind: z.enum(["image", "video"]).optional(),
+  mediaData: z.string().max(4_000_000).optional(),
+  mediaMimeType: z.string().max(120).optional(),
   sourceUrl: z.string().url().optional(),
   platform: platformSchema,
   targetAudience: z.string().max(2_000),

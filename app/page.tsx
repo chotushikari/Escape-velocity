@@ -23,7 +23,7 @@ export default function Home() {
   const activeStage = versionB ? 5 : result ? 4 : busy ? Math.min(stage + 1, 3) : 1;
 
   async function run(content = input, populationId = audienceId) {
-    if (!content.text.trim() || busy) return;
+    if ((!content.text.trim() && !content.mediaUrl) || busy) return;
     setBusy(true); setResult(null); setVersionB(null); setStage(0);
     const timer = window.setInterval(() => setStage(value => Math.min(value + 1, 4)), 600);
     try {
