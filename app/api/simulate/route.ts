@@ -1,3 +1,9 @@
 import { NextResponse } from "next/server";
-import { buildSimulation } from "../../../lib/simulation";
-export async function POST(request: Request) { const input = await request.json(); return NextResponse.json(buildSimulation(input)); }
+import { getSimulationEngine } from "../../../lib/engines";
+import { LocalSimulationEngine } from "../../../lib/engines/local-simulation-engine";
+
+export async function POST(request: Request) {
+  const input = await request.json();
+  try { return NextResponse.json(await getSimulationEngine().simulate({ content: input })); }
+  catch { return NextResponse.json(await new LocalSimulationEngine().simulate({ content: input, sameAudienceId: "fallback" })); }
+}
