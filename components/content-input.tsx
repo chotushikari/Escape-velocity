@@ -18,10 +18,23 @@ interface ContentInputProps {
 export function ContentInputPanel({ value, busy, onChange, onRun, onDemo }: ContentInputProps) {
   const [notice, setNotice] = useState("");
   const [artifact, setArtifact] = useState<ContentArtifact | null>(null);
-  function preparePost() {
+  async function preparePost() {
     const preview = value.sourceUrl ? prepareUrlImport(value.sourceUrl) : null;
     if (!preview) { setNotice("Enter a valid http(s) URL, or paste content manually."); return; }
-    onChange(applyImport(value, preview)); setArtifact(preview.artifact); setNotice(preview.notice);
+    const imported = applyImport(value, preview);
+    if (preview.platform === "Web" && !preview.mediaUrl) {
+      try {
+        const response = await fetch("/api/content/import", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: preview.sourceUrl }) });
+        const payload = await response.json() as { artifact?: ContentArtifact; error?: string };
+        if (response.ok && payload.artifact) {
+          const artifact = payload.artifact;
+          onChange({ ...imported, text: value.text.trim() ? value.text : artifact.text || artifact.summary, ...(artifact.mediaUrl ? { mediaUrl: artifact.mediaUrl, mediaKind: artifact.mediaKind } : {}) });
+          setArtifact(artifact); setNotice("Public page metadata imported. Review or add the page copy before rehearsal."); return;
+        }
+        setNotice(payload.error || preview.notice);
+      } catch { setNotice("Website import is unavailable. Paste the page copy to continue."); }
+    }
+    onChange(imported); setArtifact(preview.artifact); setNotice(preview.notice);
   }
 
   async function attachMedia(event: React.ChangeEvent<HTMLInputElement>) {
@@ -37,7 +50,7 @@ export function ContentInputPanel({ value, busy, onChange, onRun, onDemo }: Cont
   return <section className="composer" id="content" aria-label="Content input">
     <div className="composer-head"><span>PUT CONTENT IN THE ROOM</span><small>Links are referenced, never scraped; paste copy when needed</small><button type="button" className="demo-trigger" onClick={onDemo}>RUN VELLOE DEMO</button></div>
     <VelloeDemoController onStart={onDemo} />
-    <div className="url-row"><input value={value.sourceUrl ?? ""} onChange={e => onChange({ ...value, sourceUrl: e.target.value })} placeholder="Paste a URL — Instagram, LinkedIn, X, YouTube, or a web page" aria-label="Content URL" /><button type="button" onClick={preparePost}>PREPARE LINK</button></div>{notice && <p className="import-notice">{notice}</p>}
+    <div className="url-row"><input value={value.sourceUrl ?? ""} onChange={e => onChange({ ...value, sourceUrl: e.target.value })} placeholder="Paste a URL — Instagram, LinkedIn, X, YouTube, or a web page" aria-label="Content URL" /><button type="button" onClick={() => void preparePost()}>PREPARE LINK</button></div>{notice && <p className="import-notice">{notice}</p>}
     {artifact && <aside className="content-artifact" aria-live="polite"><span>{artifact.source === "upload" ? "LOCAL MEDIA" : artifact.title.toUpperCase()} · {artifact.platform ?? "Manual"}</span><b>{artifact.status === "ready" ? "READY FOR REHEARSAL" : "COPY NEEDED"}</b><p>{artifact.summary}{artifact.author ? ` Author: ${artifact.author}.` : ""}</p></aside>}
     <textarea value={value.text} onChange={e => onChange({ ...value, text: e.target.value })} placeholder="Paste the caption, script, or content here…" />
     <div className="media-row"><label><input type="file" accept="image/*,video/*" onChange={attachMedia} />UPLOAD PHOTO OR VIDEO</label>{value.mediaUrl && <span>{value.mediaKind === "video" ? "VIDEO READY" : "IMAGE READY"}</span>}<small>Files stay in this browser session for the demo.</small></div>
